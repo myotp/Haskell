@@ -1,22 +1,8 @@
 * Github
 git clone git@github.com:wj2016/Haskell.git
 
-* Basics
-#+BEGIN_SRC sh
-ghci
-sum [1,2,3]
-product [1,2,3,4,5]
-
-elem 4 [1,2,3,4]
-4 `elem` [1,2,3,4]
-elem 4 [1,2,3]
-[1..20]
-'a'
-take 5 [1..]
-[x * 2 | x <- [1..10]]
-#+END_SRC
-
-* Download <Learn You a Haskell for Great Good>
+* Learn You a Haskell for Great Good
+** Download website
 #+BEGIN_SRC sh
 wget \
      --recursive \
@@ -27,4 +13,81 @@ wget \
      --domains learnyouahaskell.com \
      --no-parent \
      http://learnyouahaskell.com/chapters
+#+END_SRC
+
+** Basic workflow
+#+BEGIN_SRC sh
+ls demo.hs
+ghci
+:l demo
+myDouble 5
+:r
+doubleSmallNumber 7
+#+END_SRC
+
+** Some simple stuff Chapter[Starting Out]
+#+BEGIN_SRC sh
+2 + 15
+5 * 100
+5 / 2
+
+True && False
+True || False
+not False
+
+5 == 5
+1 == 0
+5 /= 5
+5 /= 4
+"Hello" == "Hello"
+
+succ 99
+min 9 10
+max 8 100
+#+END_SRC
+
+** List and Tuples
+#+BEGIN_SRC sh
+let myList = [1,2,3]
+myList
+sum myList
+
+## string is just a list of characters
+"hello" == ['h', 'e', 'l', 'l', 'o']
+"hello" ++ "world"
+0:[1,2,3]                                  -- [0 | [1,2,3]]
+[1,2,3,4] !! 3
+
+head [1,2,3]
+tail [1,2,3]
+last [1,2,3]
+init [1,2,3]
+length [1,2,3]
+null [1,2,3]                               -- check if a list is empty
+null []
+reverse [1,2,3]
+take 2 [1..10]
+drop 2 [1..10]
+maximum [1..10]
+minimum [1..10]
+sum [1..10]
+product [1..10]
+elem 5 [1..10]
+[2,4..20]
+[2,4..21]
+
+take 50 (cycle [1..10])
+take 5 (repeat 3)
+replicate 5 3
+
+## List Comprehension
+[x*2 | x<-[1..10]]
+[x*2 | x<-[1..10], x >= 5]
+
+## Tuples
+(1,2,3)
+fst (1,2)
+snd (1,2)
+zip [1,2,3] ["one", "two", "three"]
+zip [1..100] ["one", "two", "three"]
 #+END_SRC

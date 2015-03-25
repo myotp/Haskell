@@ -91,3 +91,24 @@ snd (1,2)
 zip [1,2,3] ["one", "two", "three"]
 zip [1..100] ["one", "two", "three"]
 #+END_SRC
+** Type
+#+BEGIN_SRC sh
+:t 'a'     -- Char
+:t "Hello" -- [Char]
+:t 100     -- Num a => a
+:t head    -- [a] -> a
+:t fst     -- (a, b) -> a
+:t max     -- Ord a => a -> a -> a
+:t []      -- [t]
+:t (==)    -- Eq a => a -> a -> Bool
+:t (+)     -- Num a => a -> a -> a
+:t compare -- Ord a => a -> a -> Ordering
+#+END_SRC
+
+## type annotations
+#+BEGIN_SRC sh
+read "5"            -- Error
+read "5" :: Int     -- OK
+read "5" :: Float   -- OK2
+read "(3, 'A')" :: (Int, Char)
+#+END_SRC

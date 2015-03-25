@@ -16,4 +16,15 @@ take 5 [1..]
 [x * 2 | x <- [1..10]]
 #+END_SRC
 
-
+* Download <Learn You a Haskell for Great Good>
+#+BEGIN_SRC sh
+wget \
+     --recursive \
+     --no-clobber \
+     --page-requisites \
+     --html-extension \
+     --convert-links \
+     --domains learnyouahaskell.com \
+     --no-parent \
+     http://learnyouahaskell.com/chapters
+#+END_SRC

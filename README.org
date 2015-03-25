@@ -1,0 +1,19 @@
+* Github
+git clone git@github.com:wj2016/Haskell.git
+
+* Basics
+#+BEGIN_SRC sh
+ghci
+sum [1,2,3]
+product [1,2,3,4,5]
+
+elem 4 [1,2,3,4]
+4 `elem` [1,2,3,4]
+elem 4 [1,2,3]
+[1..20]
+'a'
+take 5 [1..]
+[x * 2 | x <- [1..10]]
+#+END_SRC
+
+

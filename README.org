@@ -112,3 +112,42 @@ read "5" :: Int     -- OK
 read "5" :: Float   -- OK2
 read "(3, 'A')" :: (Int, Char)
 #+END_SRC
+
+* Parallel Haskell
+** Basics
+ghci
+let x = 1 + 2 :: Int
+x
+:sprint x
+
+let y = 1 + 2 :: Int
+:sprint y
+
+let x = 1 + 2 :: Int
+let y = x + 1
+:sprint x
+:sprint y
+## Evaluate y with seq
+seq y ()
+:sprint x
+:sprint y
+
+## What is seq?
+let abc = 1 + 2
+seq abc 88
+
+## Add some data structure
+let x = 1 + 2 :: Int
+import Data.Tuple
+let z = swap (x, x+1)
+:sprint z
+seq z ()
+:sprint z
+seq x ()
+:sprint z
+
+## What is Data.Tuple.swap
+Data.Tuple.swap (1,2)
+** map
+:l pfp
+map0 (\x -> x + 1) [1,2,3]

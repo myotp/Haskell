@@ -1,0 +1,5 @@
+brew install node
+node -v
+npm -v
+node --version
+npm --version

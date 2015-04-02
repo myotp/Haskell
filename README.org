@@ -173,3 +173,13 @@ cabal unpack parconc-examples
 cd parconc-examples-*
 cabal install --only-dependencies
 cabal build
+
+** rpar.hs
+ghc -O2 rpar.hs -threaded
+./rpar 1 +RTS -N1
+./rpar 1 +RTS -N2
+
+./rpar 2 +RTS -N1
+./rpar 2 +RTS -N2
+
+./rpar 4 +RTS -N2

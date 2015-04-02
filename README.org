@@ -151,3 +151,19 @@ Data.Tuple.swap (1,2)
 ** map
 :l pfp
 map0 (\x -> x + 1) [1,2,3]
+map1 (\x -> x + 1) [1,2,3]
+
+let xs0 = map0 (+1) [1..10] :: [Int]
+:sprint xs0
+
+let xs = map1 (+1) [1..10] :: [Int]
+:sprint xs
+
+seq xs ()
+:sprint xs
+
+length xs
+:sprint xs
+
+sum xs
+:sprint xs

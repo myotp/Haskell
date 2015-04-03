@@ -215,7 +215,8 @@ ghc -O2 sudoku3.hs -rtsopts -threaded -eventlog
 ## Open sudokuX.eventlog
 ## Export Image
 ** Evaluation Strategies
-
+** Criterion
+cabal install criterion
 ** Install Threadscope
 brew install glib cairo gtk gettext fontconfig
 
@@ -234,3 +235,31 @@ export PKG_CONFIG_PATH=/opt/X11/lib/pkgconfig
 brew tap homebrew/versions
 brew install gcc48
 cabal install --with-gcc=gcc-4.8 gtk
+** LabA1
+concat [ [1,2,3], [4,5,6] ]
+ghc lab1-seq.hs -eventlog
+./lab1-seq +RTS -s
+./lab1-seq +RTS -l
+
+ghc -O2 -threaded -rtsopts -eventlog lab1.hs
+./lab1 +RTS -N2 -l
+
+let x = pscanl1 (+) [1..6]
+:sprint x
+x
+:sprint x
+
+ghc -O2 -threaded -rtsopts -eventlog pscan.hs
+./pscan +RTS -N2 -l
+
+## Basic par/pseq
+ghc -O2 -threaded -rtsopts -eventlog lab1par.hs
+./lab1par +RTS -N2 -l
+
+** Parallel sum
+ghc -O2 -threaded -rtsopts -eventlog psum.hs
+./psum +RTS -N2 -l
+** Real World Haskell
+ghc -c NumCapabilities.hs
+ghc -threaded -o NumCapabilities.out NumCapabilities.o
+./NumCapabilities.out +RTS -N4 -RTS foo

@@ -13,3 +13,4 @@ res
 *~
 .DS_Store
 .#*
+*.eventlog

@@ -114,6 +114,17 @@ read "(3, 'A')" :: (Int, Char)
 #+END_SRC
 
 * Parallel Haskell
+** Lecture 1
+:l NF
+main
+ghc -O2 -threaded -rtsopts -eventlog NF.hs
+./NF +RTS -N1 -s
+./NF +RTS -N2 -s
+./NF +RTS -N4 -ls
+
+ghc -O2 -threaded -rtsopts -eventlog NF1.hs
+./NF1 +RTS -N4 -ls
+
 ** Basics
 ghci
 let x = 1 + 2 :: Int
@@ -203,6 +214,8 @@ ghc -O2 sudoku3.hs -rtsopts -threaded -eventlog
 ## Start ThreadScope from DMG file
 ## Open sudokuX.eventlog
 ## Export Image
+** Evaluation Strategies
+
 ** Install Threadscope
 brew install glib cairo gtk gettext fontconfig
 

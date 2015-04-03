@@ -8,7 +8,10 @@ pscanl f q (x:xs) = q:pscanl f (f q x) xs
 --pscanl1 :: Monad m => (a -> a -> a) -> [a] -> m([a], [a]
 pscanl1 _ [] = error "pscanl1: empty list"
 pscanl1 f xs = do
-  return (as ++ bs)
+--  return (as ++ bs)
+  let lastElement = as !! (length as - 1)
+  as ++ (map (f lastElement) bs)
+--  as ++ [lastElement,0,0,0] ++ bs
   where (as,bs) = runEval (mypscan f xs)
 
 

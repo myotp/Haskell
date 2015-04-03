@@ -9,7 +9,7 @@ par_scanl1 f xs
       where (as,bs) = runEval (mypscan f xs)
 
 mypscan :: (a -> a -> a) -> [a] -> Eval ([a], [a])
-mypscan f (x:xs) = do
+mypscan f xs = do
    as' <- rpar (par_scanl1 f as)
    bs' <- rpar (par_scanl1 f bs)
    rseq as'

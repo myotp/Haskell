@@ -27,5 +27,5 @@ chunkdivide n xs = take n xs : chunkdivide n (drop n xs)
 
 main :: IO()
 main = do
---  print (length (par_scanl1 100000 (+) [1..10000000]))
-  print (length (scanl1 (+) [1..10000000]))
+  print (length (par_scanl1 1000 (+) [1..10000000]))
+--  print (length (scanl1 (+) [1..10000000]))

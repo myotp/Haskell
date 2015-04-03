@@ -183,3 +183,41 @@ ghc -O2 rpar.hs -threaded
 ./rpar 2 +RTS -N2
 
 ./rpar 4 +RTS -N2
+
+** Sudoku
+cd Sudoku
+ghc -O2 sudoku1.hs -rtsopts
+./sudoku1 sudoku17.1000.txt
+./sudoku1 sudoku17.1000.txt +RTS -s
+
+ghc -O2 sudoku2.hs -rtsopts -threaded
+./sudoku2 sudoku17.1000.txt +RTS -N2 -s
+
+rm sudoku2
+ghc -O2 sudoku2.hs -rtsopts -threaded -eventlog
+./sudoku2 sudoku17.1000.txt +RTS -N2 -l
+
+ghc -O2 sudoku3.hs -rtsopts -threaded -eventlog
+./sudoku3 sudoku17.1000.txt +RTS -N2 -l
+
+## Start ThreadScope from DMG file
+## Open sudokuX.eventlog
+## Export Image
+** Install Threadscope
+brew install glib cairo gtk gettext fontconfig
+
+wget http://download.savannah.gnu.org/releases/freetype/freetype-2.5.3.tar.gz
+tar -xzvf freetype-2.5.3.tar.gz
+cd freetype-2.5.3
+./configure
+make
+make install
+
+## Run this in XQuartz xterm
+gtk-demo
+
+cabal install gtk2hs-buildtools
+export PKG_CONFIG_PATH=/opt/X11/lib/pkgconfig
+brew tap homebrew/versions
+brew install gcc48
+cabal install --with-gcc=gcc-4.8 gtk

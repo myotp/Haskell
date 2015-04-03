@@ -272,5 +272,14 @@ ghc -threaded -O2 SortMain.hs
 ./SortMain +RTS -N2 -RTS 700000
 ** Parallel sort (Real World Haskell + PCPH)
 ghc -O2 psort.hs -threaded -rtsopts -eventlog
+
+-- simple linear sort
 ./psort 1 +RTS -N2 -l
+
+-- simple one step parallel sort
+./psort 2 +RTS -N2 -l
+
+-- parSort from Real World Haskell, Chapter 24
+./psort 3 +RTS -N2 -l
+./psort 3 +RTS -N4 -l
 

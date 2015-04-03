@@ -263,3 +263,14 @@ ghc -O2 -threaded -rtsopts -eventlog psum.hs
 ghc -c NumCapabilities.hs
 ghc -threaded -o NumCapabilities.out NumCapabilities.o
 ./NumCapabilities.out +RTS -N4 -RTS foo
+
+:l Sorting
+sort [3,2,1,5,4]
+
+ghc -threaded -O2 SortMain.hs
+./SortMain +RTS -N1 -RTS 700000
+./SortMain +RTS -N2 -RTS 700000
+** Parallel sort (Real World Haskell + PCPH)
+ghc -O2 psort.hs -threaded -rtsopts -eventlog
+./psort 1 +RTS -N2 -l
+

@@ -58,3 +58,8 @@ main = do
 printTimeSince t0 = do
   t1 <- getCurrentTime
   printf "time: %.2fs\n" (realToFrac (diffUTCTime t1 t0) :: Double)
+
+{-|
+ghc -O2 -threaded -rtsopts -eventlog psort.hs
+./psort 2 +RTS -N2 -l -RTS
+-}

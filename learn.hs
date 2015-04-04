@@ -12,3 +12,7 @@ divide2' xs = do
   rseq as'
   return (as' ++ b:bs)
   where ((a:as), (b:bs)) = splitAt (length xs `div` 2) xs
+
+magic_sum xs
+  | length xs < 4 = 88
+  | otherwise = sum xs

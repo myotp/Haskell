@@ -93,22 +93,27 @@ slow_plus' a b x
   | otherwise = slow_plus' (a-x) (b+x) x
 
 test_data = [1000000..1000200]
+--test_data = [100..600]
 
 -- default linear scanl1
-scan0 = sum (lscanl1 slow_plus test_data)
+scan0 :: [Int]
+scan0 = force xs
+  where xs = lscanl1 slow_plus test_data
 
 -- parallel implementation simple 2 parts
-scan1 = sum ((pscanl1 slow_plus test_data)::[Int])
+scan1 :: [Int]
+scan1 = force xs
+  where xs = pscanl1 slow_plus test_data
 
 -- parallel implementation with par/pseq
-scan2 = sum (par_scanl1 slow_plus test_data)
+scan2 :: [Int]
+scan2 = force xs
+  where xs = par_scanl1 slow_plus test_data
 
 -- parallel implementation with rpar
-scan3 = sum (par_scanl2 slow_plus test_data)
-
--- parallel implementation with rpar
---scan4 = sum ((scanP 4 slow_plus test_data)::[Int])
-
+scan3 :: [Int]
+scan3 = force xs
+  where xs = par_scanl2 slow_plus test_data
 
 -- mainly copied rpar.hs from PCPH
 -- <<main
@@ -117,8 +122,9 @@ main = do
   let scan_fun = [scan0, scan1, scan2, scan3] !! (read n)
   t0 <- getCurrentTime
   printTimeSince t0
-  print scan_fun
+  print (length scan_fun)
   printTimeSince t0
+
 -- >>
 printTimeSince t0 = do
   t1 <- getCurrentTime

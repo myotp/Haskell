@@ -1,7 +1,9 @@
 {-|
 How to run:
 ghc -O2 -threaded -rtsopts -eventlog labA1.hs
-./labA1 1 +RTS -N1 -l -RTS     ## Linear scanl1
+./labA1 0 +RTS -N1 -l -RTS     ## Linear scanl1
+./labA1 1 +RTS -N2 -l -RTS     ## Simple 2 jobs in parallel
+
 ./labA1 2 +RTS -N2 -l -RTS     ## parallel scanl1
 ./labA1 2 +RTS -N2 -l -RTS     ## parallel scanl1
 ./labA1 3 +RTS -N2 -l -RTS     ## parallel scanl1
@@ -15,6 +17,28 @@ import System.Environment
 import Control.Parallel.Strategies
 
 import Control.Parallel (par, pseq)
+import Control.DeepSeq
+
+-- linear implementation as a reference
+lscanl :: (a -> b -> a) -> a -> [b] -> [a]
+lscanl f q [] = [q]
+lscanl f q (x:xs) = q:(lscanl f (f q x) xs)
+
+lscanl1 :: (a -> a -> a) -> [a] -> [a]
+lscanl1 f (x:xs) = lscanl f x xs
+
+-- simple divide the job into 2 parts and solve each part in parallel
+-- See [Real World Haskell, Ch2, sudoku2.hs]
+pscanl1 _ [] = error "pscanl1: empty list"
+pscanl1 _ [x] = [x]
+pscanl1 f xs = do
+   runEval $ do
+     as' <- rpar (force (lscanl1 f as))
+     bs' <- rpar (force (lscanl1 f bs))
+     rseq as'
+     rseq bs'
+     return (as' ++ (map (f (last as')) bs'))
+   where (as, bs) = splitAt (length xs `div` 2) xs
 
 {-| parallel implmentation
     simply recursive solution
@@ -35,7 +59,7 @@ force' xs = go xs `pseq` ()
 {-| parallel implmentation
     divide the job into small chunks and run each chunk in parallel
 -}
-par_scanl2 f xs = par_scanl2' 4 f xs
+par_scanl2 f xs = par_scanl2' 20 f xs
 par_scanl2' chunksize f xs =
    concat (combine f (runEval (pmap (scanl1 f) (chunkdivide chunksize xs))))
 
@@ -59,18 +83,21 @@ chunkdivide n xs = take n xs : chunkdivide n (drop n xs)
 -- Since (+) is a so cheap operation, our parallel program can't beat it
 -- because it will spend much more time to create small jobs in memory.
 slow_plus a b
-  | a < 0 = -1 * (slow_plus' (abs a) b)
-  | otherwise = slow_plus' a b
+  | a < 0 = -1 * (slow_plus' (abs a) b 1)
+  | otherwise = slow_plus' a b 1
 
-slow_plus' a b
+slow_plus' a b x
   | a == 0 = b
   | a < 0 = a + b
-  | otherwise = slow_plus' (a-1) (b+1)
+  | otherwise = slow_plus' (a-x) (b+x) x
 
-test_data = [1000..2000]
+test_data = [1000000..1000200]
 
 -- default linear scanl1
-scan1 = sum (scanl1 slow_plus test_data)
+scan0 = sum (lscanl1 slow_plus test_data)
+
+-- parallel implementation simple 2 parts
+scan1 = sum ((pscanl1 slow_plus test_data)::[Int])
 
 -- parallel implementation with par/pseq
 scan2 = sum (par_scanl1 slow_plus test_data)
@@ -78,11 +105,15 @@ scan2 = sum (par_scanl1 slow_plus test_data)
 -- parallel implementation with rpar
 scan3 = sum (par_scanl2 slow_plus test_data)
 
+-- parallel implementation with rpar
+--scan4 = sum ((scanP 4 slow_plus test_data)::[Int])
+
+
 -- mainly copied rpar.hs from PCPH
 -- <<main
 main = do
   [n] <- getArgs
-  let scan_fun = [scan1, scan2, scan3] !! (read n - 1)
+  let scan_fun = [scan0, scan1, scan2, scan3] !! (read n)
   t0 <- getCurrentTime
   printTimeSince t0
   print scan_fun

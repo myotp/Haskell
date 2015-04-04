@@ -27,6 +27,7 @@ lscanl f q (x:xs) = q:(lscanl f (f q x) xs)
 lscanl1 :: (a -> a -> a) -> [a] -> [a]
 lscanl1 f (x:xs) = lscanl f x xs
 
+-- parallel implementation using Eval monad
 -- simple divide the job into 2 parts and solve each part in parallel
 -- See [Real World Haskell, Ch2, sudoku2.hs]
 pscanl1 _ [] = error "pscanl1: empty list"

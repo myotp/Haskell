@@ -283,3 +283,9 @@ ghc -O2 psort.hs -threaded -rtsopts -eventlog
 ./psort 3 +RTS -N2 -l
 ./psort 3 +RTS -N4 -l
 
+** Strategies
+import Control.Parallel.Strategies
+runEval (rpar (1+2))
+
+parMap rseq (+1) [1..3]
+parMap rpar (+1) [1..3]

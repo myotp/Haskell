@@ -64,7 +64,7 @@ dft xs = [ sum [ xs!!j * tw n (j*k) | j <- [0..n']] | k <- [0..n']]
 fft :: [Complex Float] -> [Complex Float]
 fft [a] = [a]
 fft as
-  | length as < 10000 = fft' as
+  | length as < 200 = fft' as
   | otherwise = runPar $ do
   i <- new -- ls
   j <- new -- rs
@@ -86,15 +86,18 @@ fft' as = interleave ls rs
 interleave [] bs = bs
 interleave (a:as) bs = a : interleave bs as
 
-bflyS :: [Complex Float] -> ([Complex Float], [Complex Float])
-bflyS as = (los,rts)
+bflyS' :: [Complex Float] -> ([Complex Float], [Complex Float])
+bflyS' as = (los,rts)
   where
     (ls,rs) = halve as
     los = zipWith (+) ls rs
     ros = zipWith (-) ls rs
     rts = zipWith (*) ros [tw (length as) i | i <- [0..(length ros) - 1]]
-{-|
-bflyS as = runPar $ do
+
+bflyS :: [Complex Float] -> ([Complex Float], [Complex Float])
+bflyS as
+  | length as < 100 = bflyS' as
+  | otherwise = runPar $ do
   let  (ls,rs) = halve as
   i <- new -- los
   j <- new -- ros
@@ -106,7 +109,6 @@ bflyS as = runPar $ do
   los <- get i
   rts <- get k
   return (los,rts)
--}
 
 -- missing from original file
 halve as = splitAt n' as
@@ -143,5 +145,5 @@ printTimeSince t0 = do
 {-|
 ghc -O2 -threaded -rtsopts -eventlog pfft.hs
 ./pfft 0 200 +RTS -N1 -l -RTS     ## default fft
-./pfft 0 200000 +RTS -N2 -l -A100m -RTS     ## default fft
+./pfft 0 200000 +RTS -N2 -l -A1000m -RTS     ## default fft
 -}

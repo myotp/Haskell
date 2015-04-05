@@ -102,13 +102,19 @@ bflyS as
   i <- new -- los
   j <- new -- ros
   k <- new -- rts
-  fork (put i (zipWith (+) ls rs))
   fork (put j (zipWith (-) ls rs))
   ros <- get j
-  fork (put k $ zipWith (*) ros [tw (length as) i | i <- [0..(length ros) - 1]])
+--  let ros' = runPar (parMap (tw (length as)) [0..(length ros) - 1])
+ --[tw (length as) i | i <- [0..(length ros) - 1]]
+  let ros' = tw' (length as) (length ros)
+  fork (put k ( zipWith (*) ros ros'))
+  fork (put i (zipWith (+) ls rs))
   los <- get i
   rts <- get k
   return (los,rts)
+
+tw' length_as length_ros =
+    [tw (length_as) i | i <- [0..(length_ros) - 1]]
 
 -- missing from original file
 halve as = splitAt n' as
@@ -144,6 +150,5 @@ printTimeSince t0 = do
 
 {-|
 ghc -O2 -threaded -rtsopts -eventlog pfft.hs
-./pfft 0 200 +RTS -N1 -l -RTS     ## default fft
 ./pfft 0 200000 +RTS -N2 -l -A1000m -RTS     ## default fft
 -}

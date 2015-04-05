@@ -133,7 +133,7 @@ scan4 :: [Int]
 scan4 = force xs
   where xs = par_scanl_strategy slow_plus test_data
 
--- parallel implementation with Strategy
+-- parallel implementation with Par Monad
 scan5 :: [Int]
 scan5 = par_monad_scan slow_plus test_data
 

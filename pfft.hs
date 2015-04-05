@@ -113,9 +113,14 @@ bflyS as
   rts <- get k
   return (los,rts)
 
-tw' length_as length_ros =
-    [tw (length_as) i | i <- [0..(length_ros) - 1]]
+chunkdivide :: Int -> [a] -> [[a]]
+chunkdivide _ [] = []
+chunkdivide n xs = take n xs : chunkdivide n (drop n xs)
 
+tw' la lr =  concat $ tw'' la lr (chunkdivide 1000 [0..(lr) - 1])
+
+tw'' length_as length_ros chunks =
+    runPar (parMap (map (tw (length_as))) chunks)
 -- missing from original file
 halve as = splitAt n' as
   where

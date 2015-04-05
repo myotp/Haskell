@@ -25,3 +25,37 @@ main = do
       b <- get j                        -- <3>
       return (a+b)                      -- <4>
 -- >>
+
+demo_par x y =
+    runPar $ do
+      i <- new
+      j <- new
+      fork (put i (x + y))
+      fork (put j (x - y))
+      a <- get i
+      b <- get j
+      return (a+b)
+
+par_scan_simple f [a,b] =
+    runPar $ do
+      i <- new
+      j <- new
+      fork (put i (scanl1 f a))
+      fork (put j (scanl1 f b))
+      a' <- get i
+      b' <- get j
+      return (combine f a' b')
+
+combine :: (a -> a -> a) -> [a] -> [a] -> [a]
+combine f as bs = as ++ bs'
+   where bs' = map (f (last as)) bs
+
+demo_list :: [Int] -> Int
+demo_list [a, b] = a + b
+demo_list [a, b, c] = a + b + c
+
+{-|
+:l parmonad
+par_scan_simple (+) [ [1,2], [3,4] ]
+-}
+

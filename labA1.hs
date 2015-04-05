@@ -8,6 +8,7 @@ ghc -O2 -threaded -rtsopts -eventlog labA1.hs
 ./labA1 2 +RTS -N2 -l -RTS     ## parallel scanl1
 ./labA1 3 +RTS -N2 -l -RTS     ## parallel scanl1
 ./labA1 4 +RTS -N2 -s -RTS     ## Strategy
+./labA1 5 +RTS -N2 -s -RTS     ## Par Monad
 -}
 
 import Control.Parallel
@@ -15,10 +16,14 @@ import Control.Exception
 import Data.Time.Clock
 import Text.Printf
 import System.Environment
-import Control.Parallel.Strategies
+import Control.Parallel.Strategies -- hiding (parMap)
 
 import Control.Parallel (par, pseq)
 import Control.DeepSeq
+
+
+import Control.Monad.Par
+import Stream
 
 -- linear implementation as a reference
 lscanl :: (a -> b -> a) -> a -> [b] -> [a]
@@ -47,7 +52,7 @@ par_scanl_strategy f xs = par_scanl_strategy' 10 f xs
 par_scanl_strategy' chunksize f xs =
    concat (combine f xs')
    where chunks = chunkdivide chunksize xs
-         xs' = parMap rpar (scanl1 f) chunks
+         xs' = Control.Parallel.Strategies.parMap rpar (scanl1 f) chunks
 
 {-| parallel implmentation
     simply recursive solution
@@ -100,7 +105,7 @@ slow_plus' a b x
   | a < 0 = a + b
   | otherwise = slow_plus' (a-x) (b+x) x
 
-test_data = [1000000..1000200]
+test_data = [1000000..1000200]::[Int]
 --test_data = [100..600]
 
 -- default linear scanl1
@@ -128,11 +133,15 @@ scan4 :: [Int]
 scan4 = force xs
   where xs = par_scanl_strategy slow_plus test_data
 
+-- parallel implementation with Strategy
+scan5 :: [Int]
+scan5 = par_monad_scan slow_plus test_data
+
 -- mainly copied rpar.hs from PCPH
 -- <<main
 main = do
   [n] <- getArgs
-  let scan_fun = [scan0, scan1, scan2, scan3, scan4] !! (read n)
+  let scan_fun = [scan0, scan1, scan2, scan3, scan4, scan5] !! (read n)
   t0 <- getCurrentTime
   printTimeSince t0
   print (length scan_fun)
@@ -142,3 +151,17 @@ main = do
 printTimeSince t0 = do
   t1 <- getCurrentTime
   printf "time: %.2fs\n" (realToFrac (diffUTCTime t1 t0) :: Double)
+
+par_monad_scan f xs =
+  par_monad_scan' f (chunkdivide 4 xs)
+
+par_monad_scan' f chunks = runPar $ do
+  s0 <- streamFromList chunks
+  s1 <- streamMap (scanl1 f) s0
+  xs <- streamFold (\x y -> fold_combine f x y) [] s1
+  return xs
+
+--fold_combine :: (a -> a -> a) -> [a] -> [a] -> [a]
+fold_combine f [] bs = bs
+fold_combine f as bs = -- as ++ map (f (last as)) bs
+  as ++ runPar (Control.Monad.Par.parMap (f (last as)) bs)

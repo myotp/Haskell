@@ -7,6 +7,7 @@ ghc -O2 -threaded -rtsopts -eventlog labA1.hs
 ./labA1 2 +RTS -N2 -l -RTS     ## parallel scanl1
 ./labA1 2 +RTS -N2 -l -RTS     ## parallel scanl1
 ./labA1 3 +RTS -N2 -l -RTS     ## parallel scanl1
+./labA1 4 +RTS -N2 -s -RTS     ## Strategy
 -}
 
 import Control.Parallel
@@ -40,6 +41,13 @@ pscanl1 f xs = do
      rseq bs'
      return (as' ++ (map (f (last as')) bs'))
    where (as, bs) = splitAt (length xs `div` 2) xs
+
+-- use strategy
+par_scanl_strategy f xs = par_scanl_strategy' 10 f xs
+par_scanl_strategy' chunksize f xs =
+   concat (combine f xs')
+   where chunks = chunkdivide chunksize xs
+         xs' = parMap rpar (scanl1 f) chunks
 
 {-| parallel implmentation
     simply recursive solution
@@ -115,11 +123,16 @@ scan3 :: [Int]
 scan3 = force xs
   where xs = par_scanl2 slow_plus test_data
 
+-- parallel implementation with Strategy
+scan4 :: [Int]
+scan4 = force xs
+  where xs = par_scanl_strategy slow_plus test_data
+
 -- mainly copied rpar.hs from PCPH
 -- <<main
 main = do
   [n] <- getArgs
-  let scan_fun = [scan0, scan1, scan2, scan3] !! (read n)
+  let scan_fun = [scan0, scan1, scan2, scan3, scan4] !! (read n)
   t0 <- getCurrentTime
   printTimeSince t0
   print (length scan_fun)

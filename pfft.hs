@@ -77,11 +77,14 @@ bflyS as = runPar $ do
   let  (ls,rs) = halve as
   i <- new -- los
   j <- new -- ros
+  k <- new -- rts
   fork (put i (zipWith (+) ls rs))
   fork (put j (zipWith (-) ls rs))
-  los <- get i
+
   ros <- get j
-  let  rts = zipWith (*) ros [tw (length as) i | i <- [0..(length ros) - 1]]
+  fork (put k $ zipWith (*) ros [tw (length as) i | i <- [0..(length ros) - 1]])
+  los <- get i
+  rts <- get k
   return (los,rts)
 
 -- missing from original file

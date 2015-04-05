@@ -115,12 +115,21 @@ par_scan_par_combine f [x1,x2,x3,x4] =
     i4' <- new
 
     -- consumer
-    fork (do x1' <- get i1; x2' <- get i2; put i2' (par_combine f x1' x2'))
-    fork (do x2' <- get i2'; x3' <- get i3; put i3' (par_combine f x2' x3'))
-    fork (do x3' <- get i3'; x4' <- get i4; put i4' (par_combine f x3' x4'))
+    fork (do x1' <- get i1;
+             x2' <- get i2;
+             put i2' (par_combine f x1' x2'))
+    fork (do x2' <- get i2';
+             x3' <- get i3;
+             put i3' (par_combine f x2' x3'))
+    fork (do x3' <- get i3';
+             x4' <- get i4;
+             put i4' (par_combine f x3' x4'))
 
     -- producer
-    fork (do put i1 (scanl1 f x1); put i2 (scanl1 f x2); put i3 (scanl1 f x3); put i4 (scanl1 f x4))
+    fork (do put i1 (scanl1 f x1);
+             put i2 (scanl1 f x2);
+             put i3 (scanl1 f x3);
+             put i4 (scanl1 f x4))
 
     x1'' <- get i1
     x2'' <- get i2'
@@ -131,7 +140,6 @@ par_scan_par_combine f [x1,x2,x3,x4] =
 par_combine :: NFData a => (a -> a -> a) -> [a] -> [a] -> [a]
 par_combine f as bs =
     runPar (parMap (f (last as)) bs)
-
 
 demo_list :: [Int] -> Int
 demo_list [a, b] = a + b

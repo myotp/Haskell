@@ -3,6 +3,9 @@ import Text.Printf
 import Control.Exception
 import System.Environment
 import Control.Monad.Par.Scheds.Trace
+
+import Control.Monad.Par
+
 -- NB. using Trace here, Direct is too strict and forces the fibs in
 -- the parent; see https://github.com/simonmar/monad-par/issues/27
 
@@ -55,6 +58,7 @@ pscan f [x1,x2,x3,x4] =
     i2 <- new
     i3 <- new
     i4 <- new
+
     fork (put i1 (scanl1 f x1))
     fork (put i2 (scanl1 f x2))
     fork (put i3 (scanl1 f x3))
@@ -69,8 +73,65 @@ pscan f [x1,x2,x3,x4] =
     let x4'' = combine f x3'' x4'
     return [x1', x2'', x3'', x4'']
 
+-- parallel scan with Par Monad, but linear combine
+-- First try
+pscan_lcombine f [x1,x2,x3,x4] =
+  runPar $ do
+    i1 <- new
+    i2 <- new
+    i3 <- new
+    i4 <- new
+
+    i2' <- new
+    i3' <- new
+    i4' <- new
+
+    -- consumer
+    fork (do x1' <- get i1; x2' <- get i2; put i2' (combine f x1' x2'))
+    fork (do x2' <- get i2'; x3' <- get i3; put i3' (combine f x2' x3'))
+    fork (do x3' <- get i3'; x4' <- get i4; put i4' (combine f x3' x4'))
+
+    -- producer
+    fork (do put i1 (scanl1 f x1); put i2 (scanl1 f x2); put i3 (scanl1 f x3); put i4 (scanl1 f x4))
+
+    x1'' <- get i1
+    x2'' <- get i2'
+    x3'' <- get i3'
+    x4'' <- get i4'
+    return [x1'', x2'', x3'', x4'']
+
 combine :: (a -> a -> a) -> [a] -> [a] -> [a]
 combine f as bs = map (f (last as)) bs
+
+par_scan_par_combine f [x1,x2,x3,x4] =
+  runPar $ do
+    i1 <- new
+    i2 <- new
+    i3 <- new
+    i4 <- new
+
+    i2' <- new
+    i3' <- new
+    i4' <- new
+
+    -- consumer
+    fork (do x1' <- get i1; x2' <- get i2; put i2' (par_combine f x1' x2'))
+    fork (do x2' <- get i2'; x3' <- get i3; put i3' (par_combine f x2' x3'))
+    fork (do x3' <- get i3'; x4' <- get i4; put i4' (par_combine f x3' x4'))
+
+    -- producer
+    fork (do put i1 (scanl1 f x1); put i2 (scanl1 f x2); put i3 (scanl1 f x3); put i4 (scanl1 f x4))
+
+    x1'' <- get i1
+    x2'' <- get i2'
+    x3'' <- get i3'
+    x4'' <- get i4'
+    return [x1'', x2'', x3'', x4'']
+
+par_combine :: NFData a => (a -> a -> a) -> [a] -> [a] -> [a]
+par_combine f as bs =
+    runPar (parMap (f (last as)) bs)
+
 
 demo_list :: [Int] -> Int
 demo_list [a, b] = a + b
@@ -101,13 +162,15 @@ slow_plus' a b x
   | otherwise = slow_plus' (a-x) (b+x) x
 
 main = do
+  [n] <- getArgs
+  let scan_fun = [pscan_lcombine, par_scan_par_combine] !! ((read n) - 1)
   t0 <- getCurrentTime
   let chunk_size = (length test_data `div` 4) + 1
   print chunk_size
   let chunks = chunkdivide chunk_size test_data
   print (length chunks)
   printTimeSince t0
-  let result = concat (pscan slow_plus chunks)
+  let result = concat (scan_fun slow_plus chunks)
   print (sum (result))
   printTimeSince t0
 
@@ -118,5 +181,7 @@ printTimeSince t0 = do
 
 {-|
 ghc -O2 -threaded -rtsopts -eventlog parmonad.hs
-./parmonad +RTS -N2 -s -RTS
+./parmonad 1 +RTS -N2 -l -RTS   ## pipeline first try, Par scan, linear combine
+./parmonad 2 +RTS -N2 -l -RTS   ## Par scan, Par combine
+./parmonad 2 +RTS -N4 -l -RTS   ## Par scan, Par combine, N4
 -}

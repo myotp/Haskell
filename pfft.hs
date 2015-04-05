@@ -63,16 +63,37 @@ dft xs = [ sum [ xs!!j * tw n (j*k) | j <- [0..n']] | k <- [0..n']]
 
 fft :: [Complex Float] -> [Complex Float]
 fft [a] = [a]
-fft as = interleave ls rs
+fft as
+  | length as < 10000 = fft' as
+  | otherwise = runPar $ do
+  i <- new -- ls
+  j <- new -- rs
+  let (cs,ds) = bflyS as
+  fork (put i (fft cs))
+  fork (put j (fft ds))
+  ls <- get i
+  rs <- get j
+  return (interleave ls rs)
+
+fft' :: [Complex Float] -> [Complex Float]
+fft' [a] = [a]
+fft' as = interleave ls rs
   where
     (cs,ds) = bflyS as
-    ls = fft cs
-    rs = fft ds
+    ls = fft' cs
+    rs = fft' ds
 
 interleave [] bs = bs
 interleave (a:as) bs = a : interleave bs as
 
 bflyS :: [Complex Float] -> ([Complex Float], [Complex Float])
+bflyS as = (los,rts)
+  where
+    (ls,rs) = halve as
+    los = zipWith (+) ls rs
+    ros = zipWith (-) ls rs
+    rts = zipWith (*) ros [tw (length as) i | i <- [0..(length ros) - 1]]
+{-|
 bflyS as = runPar $ do
   let  (ls,rs) = halve as
   i <- new -- los
@@ -80,12 +101,12 @@ bflyS as = runPar $ do
   k <- new -- rts
   fork (put i (zipWith (+) ls rs))
   fork (put j (zipWith (-) ls rs))
-
   ros <- get j
   fork (put k $ zipWith (*) ros [tw (length as) i | i <- [0..(length ros) - 1]])
   los <- get i
   rts <- get k
   return (los,rts)
+-}
 
 -- missing from original file
 halve as = splitAt n' as

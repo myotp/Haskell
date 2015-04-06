@@ -5,6 +5,7 @@ How to run:
 ghc -O2 -threaded -rtsopts -eventlog LabA16ScanMain.hs
 ./LabA16ScanMain 0 +RTS -N1 -l -RTS     ## Sequential scanl1
 ./LabA16ScanMain 1 +RTS -N2 -l -RTS     ## Par Monad
+./LabA16ScanMain 2 +RTS -N2 -l -RTS     ## Eval
 -}
 
 import Data.Time.Clock
@@ -17,17 +18,21 @@ test_data = [1000000..1000200]
 
 -- default sequential scanl1
 scan0 :: [Int]
-scan0 = lscanl1 slow_plus test_data
+scan0 = seq_scanl1 slow_plus test_data
 
 -- parallel implementation with Par Monad
 scan1 :: [Int]
 scan1 = par_monad_scan slow_plus test_data
 
+-- parallel implementation with Eval
+scan2 :: [Int]
+scan2 = par_eval_scan slow_plus test_data
+
 -- mainly copied rpar.hs from PCPH
 -- <<main
 main = do
   [n] <- getArgs
-  let scan_fun = [scan0, scan1] !! (read n)
+  let scan_fun = [scan0, scan1, scan2] !! (read n)
   t0 <- getCurrentTime
   printTimeSince t0
   print (sum (scan_fun))

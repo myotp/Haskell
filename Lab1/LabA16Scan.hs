@@ -1,16 +1,20 @@
 module LabA16Scan
 (
-    lscanl1
+    seq_scanl1
   , slow_plus
   , par_monad_scan
+  , par_eval_scan
 ) where
+
+import Control.Parallel.Strategies
+import Control.DeepSeq (force)
 
 import Control.Monad.Par
 import Stream
 
 -- sequential implementation as a reference
-lscanl1 :: (a -> a -> a) -> [a] -> [a]
-lscanl1 f (x:xs) = lscanl f x xs
+seq_scanl1 :: (a -> a -> a) -> [a] -> [a]
+seq_scanl1 f (x:xs) = lscanl f x xs
 
 lscanl :: (a -> b -> a) -> a -> [b] -> [a]
 lscanl f q [] = [q]
@@ -35,6 +39,21 @@ fold_combine f as bs =
 chunkdivide :: Int -> [a] -> [[a]]
 chunkdivide _ [] = []
 chunkdivide n xs = take n xs : chunkdivide n (drop n xs)
+
+---- ===== parallel implementation using Eval monad ====
+-- divide the job into 2 parts and solve each part in parallel
+-- See [Real World Haskell, Ch2, sudoku2.hs]
+par_eval_scan :: NFData a => (a -> a -> a) -> [a] -> [a]
+par_eval_scan _ [] = error "par_eval_scan: empty list"
+par_eval_scan _ [x] = [x]
+par_eval_scan f xs = do
+   runEval $ do
+     as' <- rpar (force (seq_scanl1 f as))
+     bs' <- rpar (force (seq_scanl1 f bs))
+     rseq as'
+     rseq bs'
+     return (as' ++ (map (f (last as')) bs'))
+   where (as, bs) = splitAt (length xs `div` 2) xs
 
 {-|
 Magic expensive associative operator

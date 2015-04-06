@@ -1,8 +1,10 @@
 {-|
-How to run
+This file will simplify the job to generate eventlog for ThreadScope
+
+How to run:
 ghc -O2 -threaded -rtsopts -eventlog LabA16ScanMain.hs
 ./LabA16ScanMain 0 +RTS -N1 -l -RTS     ## Sequential scanl1
-./LabA16ScanMain 1 +RTS -N2 -s -RTS     ## Par Monad
+./LabA16ScanMain 1 +RTS -N2 -l -RTS     ## Par Monad
 -}
 
 import Data.Time.Clock

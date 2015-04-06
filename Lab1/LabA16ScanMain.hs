@@ -12,7 +12,8 @@ import Text.Printf
 import System.Environment
 import LabA16Scan
 
-test_data = [1000000..1000200]::[Int]
+test_data :: [Int]
+test_data = [1000000..1000200]
 
 -- default sequential scanl1
 scan0 :: [Int]

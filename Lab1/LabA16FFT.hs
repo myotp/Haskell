@@ -59,6 +59,30 @@ halve as = splitAt n' as
   where
     n' = div (length as + 1) 2
 
+------- ====== par/pseq Implementation ======= ------------
+joinfft :: ([Complex Float], [Complex Float]) -> [Complex Float]
+joinfft xys = interleave (fst xys) (snd xys)
+
+divConq ::     -- is the problem big enough to be divided?
+                ([Complex Float] -> Bool)            
+               -- split
+            -> ([Complex Float] -> ([Complex Float], [Complex Float]))  
+               -- join
+            -> (([Complex Float], [Complex Float]) -> [Complex Float])
+               -- solve a sub-problem
+            -> ([Complex Float] -> ([Complex Float],[Complex Float]))
+            -> ([Complex Float] -> [Complex Float])
+
+divConq granfilter split join f prob 
+        | granfilter prob == True = fft prob
+        | granfilter prob == False = par (fst ps) $ pseq (snd ps) $ 
+                join ( (divConq granfilter split join f (fst ps))
+                    , (divConq granfilter split join f (snd ps))  )
+  where us = split prob
+        vs0 = f (fst us)
+        vs1 = f (snd us)
+        ps = (join (fst vs0, snd vs0), join ( fst vs1, snd vs1))    
+    
 ------- ====== Par Monad Implementation ======= ------------
 par_monad_fft :: [Complex Float] -> [Complex Float]
 par_monad_fft [a] = [a]

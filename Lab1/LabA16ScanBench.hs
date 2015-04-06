@@ -11,6 +11,7 @@ test_data :: [Int]
 test_data = [1000000..1000050]
 
 main = defaultMain [
-         bench "scanl1" (nf (\x -> seq_scanl1 slow_plus x) test_data)
+         bench "Seq scanl1" (nf (\x -> seq_scanl1 slow_plus x) test_data)
        , bench "Par Monad" (nf (\x -> par_monad_scan slow_plus x) test_data)
+       , bench "Eval" (nf (\x -> par_eval_scan slow_plus x) test_data)
        ]

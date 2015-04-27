@@ -1,5 +1,7 @@
-import Data.List
-import Data.Ord
+--import Data.List
+--import Data.Ord
+
+import Data.Array.Repa as Repa
 
 type BuySellResult = (Int, Int, Int)
 
@@ -26,3 +28,8 @@ maxi (x:xs) i =
         then (x, i)
         else xy'
     where xy' = maxi xs (i+1)
+
+parPlus1 :: [Int] -> [Int]
+parPlus1 xs =
+    toList (computeS (Repa.map (+1) a) :: Array U DIM1 Int)
+    where a = fromListUnboxed (Z :. (length xs)) xs :: Array U DIM1 Int

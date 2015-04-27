@@ -289,3 +289,18 @@ runEval (rpar (1+2))
 
 parMap rseq (+1) [1..3]
 parMap rpar (+1) [1..3]
+
+** Criterion
+
+** FFT
+ghci
+:l given
+generate2DSamplesList 4 mX mY sdX sdY
+
+Data.Vector.toList (Data.Vector.generate 10 (\i -> sin (2 * pi * fromIntegral i / 8)))
+* Lab2
+#+BEGIN_SRC sh
+ghci
+:l LabB16
+buySell [0,0,2,9,8,10,1,10]
+#+END_SRC

@@ -26,17 +26,17 @@ maxi (x:xs) startIndex = maxi' (x, 0) startIndex $ zip xs [1..]
 
 maxi' (x, i) _ [] = (x, i)
 maxi' (x, i) i0 ((x',i'):xs)
-    | (x' > x) && (i' > i0) = maxi' (x', i') i0 xs
-    | otherwise = maxi' (x, i) i0 xs
+   | (x' > x) && (i' > i0) = maxi' (x', i') i0 xs
+   | otherwise = maxi' (x, i) i0 xs
 
 parPlus1 :: [Int] -> [Int]
 parPlus1 xs =
-    toList (computeS (Repa.map (+1) a) :: Array U DIM1 Int)
-    where a = fromListUnboxed (Z :. (length xs)) xs :: Array U DIM1 Int
+   toList (computeS (Repa.map (+1) a) :: Array U DIM1 Int)
+   where a = fromListUnboxed (Z :. (length xs)) xs :: Array U DIM1 Int
 
 -- parallel solution
-parBuySell xs =
-   merge xs'
+parBuySell :: [Int] -> BuySellResult
+parBuySell xs = merge xs'
    where xs' = parBuySell' xs
 
 merge (x:xs) = merge' x xs
@@ -47,7 +47,7 @@ merge' (b,s,p) ((b',s',p'):xs)
 
 -- parallel
 parBuySell' xs =
-    toList (computeS (Repa.map (mapf) a) :: Array U DIM1 BuySellResult)
-    where a = fromListUnboxed (Z :. (length buyDays)) buyDays :: Array U DIM1 Int
-          buyDays = [0..(length xs - 1)]
-          mapf = findMaxProfitForDay xs
+   toList (computeS (Repa.map (mapf) a) :: Array U DIM1 BuySellResult)
+   where a = fromListUnboxed (Z :. (length buyDays)) buyDays :: Array U DIM1 Int
+         buyDays = [0..(length xs - 1)]
+         mapf = findMaxProfitForDay xs

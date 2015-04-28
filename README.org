@@ -302,5 +302,16 @@ Data.Vector.toList (Data.Vector.generate 10 (\i -> sin (2 * pi * fromIntegral i 
 #+BEGIN_SRC sh
 ghci
 :l LabB16
-buySell [0,0,2,9,8,10,1,10]
+seqBuySell [0,0,2,9,8,10,1,10]
+parBuySell [0,0,2,9,8,10,1,10]
+#+END_SRC
+
+* Repa
+#+BEGIN_SRC sh
+cabal install repa
+ghci
+:l LabB16
+import Data.Array.Repa as Repa
+let a = fromListUnboxed (Z :. 10) [1..10] :: Array U DIM1 Int
+toList (computeS (Repa.map (+1) a) :: Array U DIM1 Int)
 #+END_SRC

@@ -1,3 +1,9 @@
+module LabB16
+(
+    seqBuySell
+  , parBuySell
+) where
+
 import Data.Array.Repa as Repa
 
 type BuySellResult = (Int, Int, Int)
